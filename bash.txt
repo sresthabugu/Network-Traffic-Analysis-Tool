@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Interface to capture traffic on (change as needed)
+interface="enp0s3"
+
+# Capture duration (seconds)
+capture_time=30
+
+# Output filename for captured traffic
+capture_file="traffic.pcap"
+
+# Nmap scan target range (change as needed)
+target_range="192.168.1.0/24"
+
+# Start Wireshark capture
+echo "Starting Wireshark capture..."
+wireshark -i $interface -w $capture_file -d $capture_time &
+capture_pid=$!
+
+# Perform Nmap scan while capturing traffic
+echo "Starting Nmap scan..."
+nmap -sS -Pn $target_range &
+scan_pid=$!
+
+# Wait for capture to finish
+wait $capture_pid
+
+# Stop Wireshark capture
+echo "Stopping Wireshark capture..."
+kill $capture_pid
+
+# Analyze captured traffic with Wireshark
+echo "Opening captured traffic in Wireshark..."
+wireshark $capture_file
+
+# Analyze Nmap scan results
+echo "Nmap scan results:"
+cat nmap.log
+
+# Clean up (optional)
+# rm $capture_file
+
+echo "Network traffic analysis completed."
